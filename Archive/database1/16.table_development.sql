@@ -1,5 +1,7 @@
 -- Из внешнего мира в таблицу Staging кладутся сырые данные. Под каждую таблицу - staging таблицы. Все поля VARCHAR.
 -- Надо ли связывать связями таблицу сырых данных со справочником/словарем, куда кладутся эти данные?
+--CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION joe;
+
 CREATE TABLE SA_product_A(
     product_ID  VARCHAR NOT NULL,
     product_code VARCHAR NULL,
@@ -239,8 +241,10 @@ CREATE TABLE E_log_table_load_err_A( -- E means error
     err_type VARCHAR NOT NULL,
     err_text VARCHAR,
     key_value VARCHAR,
+	
     --file_row_num BIGINT NOT NULL, --нужно ли это поле?
-    
+	
+    source_system_ID BIGINT,
     sa_load_ID BIGINT,
     load_ID BIGINT, --FOREIGN KEY REFERENCES log_load_dwh(load_id),
     load_procedure_name VARCHAR,-- зарезервированно
