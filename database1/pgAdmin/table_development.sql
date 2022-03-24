@@ -235,7 +235,7 @@ ALTER TABLE log_table_load_A ADD CONSTRAINT FK_log_dwh_load_A_load FOREIGN KEY (
 CREATE TABLE E_log_table_load_err_A( -- E means error
     
     trg_table VARCHAR NOT NULL,
-    proc_name VARCHAR NOT NULL, -- procedure_name - is like reserved word
+    proc_name VARCHAR, -- procedure_name - is like reserved word
     e_row_count BIGINT,
     error_code INTEGER NOT NULL, -- PRIMARY KEY, -- можно это сделать первичным ключом?
     err_type VARCHAR NOT NULL,

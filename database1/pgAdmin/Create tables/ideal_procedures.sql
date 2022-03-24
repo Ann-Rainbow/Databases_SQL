@@ -1,5 +1,13 @@
 
 --------------------------------------------------------------------------------------------------------
+-- duplicate key value violates unique constraint "u_d_product_a_client"
+-- DETAIL:  Key (product_code)=(03) already exists. -- Вписала в SA новые данные, таже ошибка. Значит требует,
+-- чтобы в SA каждый раз были новые данные. Обрабатывает всю таблицу сразу. Надо построчно, только
+-- если новые строки были добавлены. В цикле все время делается insert, и не может сделаться update тогда?
+--Да так, т.к. при вызове этого куска кода в product_id всегда NULL 
+
+-- Ошибки временны. Про них в комментариях не пишут. 
+
 CREATE OR REPLACE PROCEDURE load_D_counteragent_A (
 	p_seans_load_id bigint,
 	p_load_status varchar) AS $$

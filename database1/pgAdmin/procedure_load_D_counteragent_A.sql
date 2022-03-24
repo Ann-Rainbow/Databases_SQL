@@ -7,7 +7,8 @@ DECLARE
 	v_t_row_count bigint = 0;
 	v_e_row_count bigint = 0;
 
-	cur_counteragent CURSOR IS SELECT saagent.counteragent_code, saagent.counteragent_name, dagent.counteragent_id, saagent.is_last 
+	cur_counteragent CURSOR IS SELECT saagent.counteragent_code, saagent.counteragent_name, 
+									  dagent.counteragent_id, saagent.is_last 
     FROM SA_counteragent_A saagent
 	LEFT JOIN D_counteragent_A dagent ON 
 	saagent.counteragent_code = dagent.counteragent_code
@@ -32,7 +33,8 @@ BEGIN
 				BEGIN
 				IF v_counteragent.counteragent_id IS NULL THEN
 				INSERT INTO public.D_counteragent_A (counteragent_id, counteragent_name, counteragent_code, load_id)
- 					VALUES (nextval('seq_counteragent'), v_counteragent.counteragent_name, v_counteragent.counteragent_code, v_load_id);
+ 					VALUES (nextval('seq_counteragent'), v_counteragent.counteragent_name, 
+							v_counteragent.counteragent_code, v_load_id);
 					v_t_row_count = v_t_row_count + 1;
 				ELSE
 				UPDATE public.D_counteragent_A 
@@ -84,7 +86,7 @@ BEGIN
 			p_sa_load_id => v_sa_load_id::bigint,
 			p_load_name => 'Load_D_counteragent_A'::varchar,
 			p_trg_table => 'D_counteragent_A'::varchar,
-			p_source_system_id => '123'::bigint,
+			p_source_system_id => '111'::bigint, --?
 			p_load_period => p_load_period,
 			p_key_value => 'Найдена ошибка',
 			p_err_type => SQLSTATE::varchar,
