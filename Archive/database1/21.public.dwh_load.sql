@@ -15,31 +15,20 @@ AS $BODY$
   v_load_status character varying = 'STARTED';
   
   BEGIN
-
-  
-    INSERT INTO public.log_dwh_load_A -- логирование старта работы где? Тут
-		(seans_load_id, load_status, date_begin, source_system_id) 
-      	VALUES (p_seans_load_id, v_load_status, now(), p_source_system_id); -- без параметров можно, без p_seans_load_id seans_load_ID - для главной процедуры
+   
+    	INSERT INTO public.log_dwh_load_A
+			(seans_load_id, load_status, date_begin, source_system_id) -- без $ лучше?
+      		VALUES (p_seans_load_id, v_load_status, now(), p_source_system_id); -- без параметров можно, без p_seans_load_id seans_load_ID - для главной процедуры
     
     --CALL имя ( [ аргумент ] [, ...] ) -- вызывает процедуру
 
+--     CALL load_D_product_A(p_seans_load_id => p_seans_load_id,
+-- 			p_load_status => p_load_status);
 
--- 			CALL fill_table_load_log 
--- 			 (p_seans_load_id => p_seans_load_id,
--- 			 p_load_id => v_load_id,
--- 			 p_load_status => p_load_status
-			 
-
-			 
-
-CALL load_D_product_A(
-	p_seans_load_id => p_seans_load_id::bigint
-);	
-
-CALL load_D_counteragent_A (
-	p_seans_load_id => p_seans_load_id::bigint
-);
-			 
+    -- CALL fill_table_load_log 
+    --   (p_seans_load_id => p_seans_load_id,
+		-- 	 p_load_id => v_load_id,
+		-- 	 p_load_status => p_load_status);
     
 --     CALL load_D_counteragent_A(p_seans_load_id => p_seans_load_id,
 -- 			p_load_status => p_load_status);
@@ -53,21 +42,14 @@ CALL load_D_counteragent_A (
     -- дописать основную логику работы, КОД НА СЕРВЕР, ЗАПУСТИТЬ ПРОЦЕДУРУ, ОСНОВНУЮ ЛОГИКУ , посмотреть работает ли.
     -- по блокам выполнять, не перепрыгивать, комментарии удалить.
 	--ELSE
-	v_load_status = 'FINISHED';
-    UPDATE public.log_dwh_load_A --dwh_load --здесь дописать что если закончилось с ошибками, то обновить, что
-								 -- закончилось FINISHED* именно в dwh_log. Или просто FINISHED туда же.
-		SET load_status = v_load_status,
-			--IF e_row_count > 0 then
-			--load_status = 'FINISHED', 
+    UPDATE public.log_dwh_load_A --dwh_load
+		SET load_status = 'FINISHED', 
 			date_end = now()
       WHERE seans_load_id = p_seans_load_id;
 
 
- 
-
-
  EXCEPTION WHEN OTHERS THEN -- логирование в error_table
-	PERFORM public.fill_table_load_err(
+	  SELECT public.fill_table_load_err(
 	p_trg_table => 'log_dwh_load_A',
 	p_err_type => SQLSTATE,
 	p_err_text => SQLERRM,
@@ -77,8 +59,8 @@ CALL load_D_counteragent_A (
 	p_seans_load_id => p_seans_load_id,
 	p_load_name => 'dwh_load',
 	p_source_system_id => p_source_system_id
+	  
 	  );
-	v_load_status = 'FINISHED*'; -- фиксирует ли в таблицу dwh_load?
 		
 
 END;

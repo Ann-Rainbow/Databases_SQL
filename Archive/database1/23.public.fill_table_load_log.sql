@@ -3,15 +3,15 @@
 -- DROP FUNCTION IF EXISTS public.fill_table_load_log(bigint, bigint, character varying, character varying, bigint, character varying, character varying, bigint, bigint, bigint);
 
 CREATE OR REPLACE FUNCTION public.fill_table_load_log(
-	p_seans_load_id bigint ,
-	p_load_status character varying,
-	p_load_name character varying,
 	p_trg_table character varying,
     p_date_begin date,
     p_date_end date,
     p_source_system_id bigint ,
+    p_load_id bigint,
+    p_seans_load_id bigint,
+    p_load_name character varying,
+    p_load_status character varying,
     p_src_table character varying,
-	p_load_id bigint DEFAULT nextval('seq_seans_load_id'), --изменила
 	p_t_row_count bigint DEFAULT 0,
     p_e_row_count bigint DEFAULT 0,
 	p_s_row_count bigint DEFAULT 0
