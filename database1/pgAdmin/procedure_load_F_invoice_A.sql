@@ -26,10 +26,14 @@ DECLARE
 	FROM SA_invoice_A AS sainv 
 	LEFT JOIN D_counteragent_A dagent
 	ON  dagent.counteragent_src_code::varchar = sainv.counteragent_code
+	
 	LEFT JOIN D_product_A dprod
 	ON dprod.product_src_code = sainv.product_code
-	WHERE sainv.is_last = 'true' AND
-	sainv.load_period = p_load_period;
+	
+-- 	LEFT JOIN F_invoice_line_A
+	
+ 	WHERE sainv.is_last = 'true'  AND
+ 	sainv.load_period = p_load_period;
     
 BEGIN
     v_load_id = nextval('seq_load_id'); 
@@ -49,6 +53,9 @@ PERFORM public.fill_table_load_log (
 	p_e_row_count => v_e_row_count::bigint,
 	p_s_row_count => v_t_row_count + v_e_row_count::bigint
 	);	
+
+-- update or delete on table "f_invoice_a" violates 
+-- foreign key constraint "fk_f_invoice_line_a_invoice" on table "f_invoice_line_a"
 
 	DELETE FROM F_invoice_A 			--в этом случае ставится -1 куда-то.
 	WHERE load_period = p_load_period;
@@ -71,9 +78,10 @@ BEGIN
 			p_key_value => 'Контрагент не найден.', --v_debug1,
 																	--v_inv.counteragent_src_code, --чётко, подробно везде, чтобы идетифицировать, где ошибка.
 			p_err_type => 'map',                    --SQLSTATE::character varying,
-			p_err_text => 'Ошибка в строке. Код контрагента: '|| v_inv.counteragent_code|| '. Ошибка в селекте, в начале процедуры.'  --SQLERRM::character varying 
+			p_err_text => 'Ошибка в строке. Код контрагента: '||v_inv.counteragent_code||'. Ошибка в селекте, в начале процедуры.'  --SQLERRM::character varying 
 	    	);
 			v_e_row_count = v_e_row_count + 1;
+			v_load_status = 'FINISHED*'::character varying; 
 	--CONTINUE;
 	END IF;
 		
@@ -87,9 +95,10 @@ BEGIN
 			p_source_system_id => 0::bigint,
 			p_key_value => 'Продукт не найден.',
 			p_err_type => 'map',
-			p_err_text => 'Ошибка в строке. Код продукта: '|| v_inv.product_code|| '. Ошибка в селекте, в начале процедуры.'
+			p_err_text => 'Ошибка в строке. Код продукта: '||v_inv.product_code||'. Ошибка в селекте, в начале процедуры.'
 	    	);
 			v_e_row_count = v_e_row_count + 1;
+			v_load_status = 'FINISHED*'::character varying; 
 	--CONTINUE;
 	END IF;
 
@@ -99,7 +108,7 @@ BEGIN
 												 load_id,   load_period, seans_load_id, product_id,         product_src_code) 
  			VALUES                     (nextval('seq_F_invoice'), v_inv.counteragent_id,    v_inv.invoice_code,  v_inv.counteragent_code, v_inv.f_date::date, v_inv.operation_type::integer,
 									           v_load_id, p_load_period, p_seans_load_id, v_inv.product_id, v_inv.product_code); 
-			v_t_row_count = v_t_row_count + 1;
+			v_t_row_count = v_t_row_count + 1; --кол-во отработанных строк
 			
 
 	

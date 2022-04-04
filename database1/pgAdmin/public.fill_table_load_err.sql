@@ -20,7 +20,7 @@ AS $BODY$
  
 
   BEGIN
-RAISE NOTICE 'fill_table_load_err - after Begin';
+--RAISE NOTICE 'fill_table_load_err - after Begin';
 
     INSERT INTO E_log_table_load_err_A
     --ОБЪЯВЛЕНИЕ ПОЛЕЙ СДЕЛАТЬ!
@@ -98,5 +98,5 @@ RAISE NOTICE 'fill_table_load_err - after Begin';
   END ;
 $BODY$;
 
-ALTER FUNCTION public.fill_table_load_err(character varying, character varying, character varying, character varying, bigint, bigint, bigint, character varying, bigint)
-    OWNER TO postgres;
+-- ALTER FUNCTION public.fill_table_load_err(character varying, character varying, character varying, character varying, bigint, bigint, bigint, character varying, bigint)
+--     OWNER TO postgres;

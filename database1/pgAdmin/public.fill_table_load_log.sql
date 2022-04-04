@@ -69,5 +69,5 @@ AS $BODY$
     END;
 $BODY$;
 
-ALTER FUNCTION public.fill_table_load_log(bigint, character varying, character varying, character varying, date, date, bigint, character varying, bigint, bigint, bigint, bigint)
-    OWNER TO postgres;
+-- ALTER FUNCTION public.fill_table_load_log(bigint, character varying, character varying, character varying, date, date, bigint, character varying, bigint, bigint, bigint, bigint)
+--     OWNER TO postgres;

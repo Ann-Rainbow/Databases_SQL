@@ -22,7 +22,7 @@ DECLARE
     LEFT JOIN D_counteragent_A dagent 
         ON saagent.counteragent_code = dagent.counteragent_src_code
     WHERE  saagent.is_last = 'true' AND
-		   saagent.load_period = p_load_period;	 
+		   saagent.load_period::integer =  p_load_period;   --p_load_period;	 
     
 BEGIN
     v_load_id = nextval('seq_load_id'); 
@@ -59,9 +59,10 @@ v_load_status = 'FINISHED'::character varying;
 			p_source_system_id => 0::bigint,
 			p_key_value => 'Найдена ошибка',
 			p_err_type => 'map',
-			p_err_text => 'Название контрагента не найдено. Код контрагента: ' || v_agent.counteragent_code || '. Ошибка в селекте, в начале процедуры.'
+			p_err_text => 'Название контрагента не найдено. Код контрагента: '||v_agent.counteragent_code||'. Ошибка в селекте, в начале процедуры.'
 	    	);
 			v_e_row_count = v_e_row_count + 1;
+			v_load_status = 'FINISHED*'::character varying; 
 	--CONTINUE;
 	END IF;
 	
@@ -78,22 +79,27 @@ v_load_status = 'FINISHED'::character varying;
 			p_err_text => 'Cтрока уже существует. Код контрагента найден несколько раз. Код контрагента: '||v_agent.counteragent_code||'. Ошибка в селекте, в начале процедуры.'
 	    	);
 			v_e_row_count = v_e_row_count + 1;
+			v_load_status = 'FINISHED*'::character varying; 
 	--CONTINUE;
 	END IF;	
 	
 	IF v_agent.counteragent_ID IS NULL THEN 
 		INSERT INTO public.D_counteragent_A (counteragent_id,              counteragent_name,          counteragent_src_code,       load_id, 
-														  load_period) --seans_load_id не вставляют
+														  load_period) --seans_load_id не вставляют. почему?
  			VALUES                     (nextval('seq_D_counteragent'),v_agent.counteragent_name,   v_agent.counteragent_code, v_load_id,  --v_prod.price::numeric, 
 											             v_agent.load_period);	
 			v_t_row_count = v_t_row_count + 1;
+			--RAISE NOTICE 'AFTER INSERT';
     ELSE
         UPDATE public.D_counteragent_A 
         SET counteragent_name = v_agent.counteragent_name,
-			load_id = v_load_id
+			load_id = v_load_id,
+			load_period = p_load_period
+			--counteragent_src_code = v_agent.counteragent_code
 			--load_status = v_load_status
 		WHERE v_agent.counteragent_code = D_counteragent_A.counteragent_src_code; 
-        v_t_row_count = v_t_row_count + 1;
+        v_t_row_count = v_t_row_count + 1; --кол-во обработанных строк
+		--RAISE NOTICE 'AFTER UPDATE';
 	END IF;
 	
 	EXCEPTION

@@ -78,6 +78,7 @@ BEGIN
 			p_err_text => 'Название продукта не найдено. Код продукта: ' || v_prod.product_code || '. Ошибка в селекте, в начале процедуры.'
 	    	);
 			v_e_row_count = v_e_row_count + 1;
+			v_load_status = 'FINISHED*'::character varying; 
 	END IF;
 		
 	IF v_prod.over_prod > 1 THEN
@@ -94,6 +95,7 @@ BEGIN
 			 --SQLERRM::character varying --'Cтрока уже существует'
 	    	);
 			v_e_row_count = v_e_row_count + 1;
+			v_load_status = 'FINISHED*'::character varying; 
 	--CONTINUE;
 	END IF;
 
@@ -107,7 +109,13 @@ BEGIN
     ELSE
         UPDATE public.D_product_A 
         SET product_name = v_prod.product_name,
-			load_id = v_load_id
+			price = v_prod.price::numeric,
+			load_id = v_load_id,
+			load_period = p_load_period
+			--product_src_code = v_prod.product_code
+			--seans_load_id = p_seans_load_id, --надо ли update полей с переданными параметрами? т.е. 
+			--load_period = p_load_period      --якобы, что загрузка проходила.
+			
 			--load_status = v_load_status
 		WHERE v_prod.product_code = D_product_A.product_src_code; 
         	  v_t_row_count = v_t_row_count + 1;
@@ -123,7 +131,7 @@ BEGIN
 			p_sa_load_id => v_sa_load_id::bigint,
 			p_load_name => 'load_D_product_A'::character varying,
 			p_trg_table => 'D_product_A'::character varying, 
-			p_source_system_id => v_prod.source_system_id::bigint,  
+			p_source_system_id => 0::bigint,  --v_prod.source_system_id::bigint
 			p_key_value => 'Найдена ошибка',
 			p_err_type => SQLSTATE::character varying,
 			p_err_text => SQLERRM::character varying
