@@ -55,7 +55,7 @@ CALL load_D_product_A (
 
 SELECT public.dwh_load (10, 26, 11);
 SELECT public.dwh_load (10, 26, 11);
-SELECT public.dwh_load (202200000, 1, 189);
+SELECT public.dwh_load (202200000, 190, 1);
 -- 	p_load_period => 10,
 -- 	p_source_system_id => 26,
 -- 	p_seans_load_id => 11
@@ -68,9 +68,12 @@ ORDER BY load_id DESC;
 --DELETE FROM e_log_table_load_err_a;
 SELECT * FROM log_table_load_A
 ORDER BY load_id DESC;
-SELECT * FROM log_dwh_load_A;
+SELECT * FROM log_dwh_load_A
+ORDER BY seans_load_id DESC;
 SELECT * FROM D_counteragent_A;
 SELECT * FROM log_dwh_load_A;
+SELECT * FROM F_invoice_A;
+SELECT * FROM D_product_A;
 
 -- CALL load_F_invoice_A (
 -- 	p_seans_load_id => 123::bigint, p_load_id =>20::bigint
@@ -233,6 +236,8 @@ DELETE FROM D_counteragent_A WHERE counteragent_id = 4;
 DELETE FROM SA_counteragent_A WHERE sa_load_id = 3;
 DELETE FROM F_invoice_line_A WHERE invoice_id = -1;
 DELETE FROM SA_invoice_line_A WHERE sa_load_id = 6;
+DELETE FROM e_log_table_load_err_a WHERE seans_load_id = 188;
+
 
 
 INSERT INTO SA_invoice_A VALUES ('05', '2022-02-02', 1, 1, 10, 'true', '1', '20');

@@ -4,8 +4,8 @@
 
 CREATE OR REPLACE FUNCTION public.dwh_load(
 	p_load_period bigint,
-	p_source_system_id bigint,
-	p_seans_load_id bigint DEFAULT nextval('seq_seans_load_id'::regclass))
+	p_seans_load_id bigint, 
+	p_source_system_id bigint DEFAULT nextval('seq_seans_load_id'::regclass))
 	
     RETURNS void
     LANGUAGE 'plpgsql'
@@ -14,9 +14,29 @@ CREATE OR REPLACE FUNCTION public.dwh_load(
 AS $BODY$
   DECLARE
   v_load_status character varying = 'STARTED';
-  v_tbl character varying;
+  --v_tbl character varying;
+  --v_t_index_count integer; --= 0;
+  
+  	cur_load CURSOR IS
+	SELECT load_status			--src_table --logt.
+	FROM log_table_load_a logt
+	WHERE seans_load_id = p_seans_load_id
+	ORDER BY CASE WHEN  load_status = 'STARTED' THEN 1	  --v_load_status = 'STARTED'
+				  WHEN	load_status = 'FINISHED*' THEN 2 --v_load_status = 'FINISHED*'
+	              WHEN  load_status = 'FINISHED' THEN 3  --v_load_status = 'FINISHED'
+				  ELSE 4 --результат выполнения CASE = 2, сортировка по load_status = 'FINISHED*'. Когда внутри CASE истина, остальное не проходит.
+				  END; -- Далее FETCH извлекает строку 'FINISHED*' из курсора в цель, нужную переменную.
+	-- сортировка: сначала 1, затем где 2, потом 3.			  
+				  
+				  
+  -- The PG manual says the ORDER BY expression:
+  --Each expression can be the name or ordinal number of an output column (SELECT list item)
+  --, or it can be an arbitrary expression formed from input-column values.
+  --Каждое выражение может быть именем или порядковым номером выходного столбца (элемент списка SELECT), 
+  --или оно может быть произвольным выражением, сформированным из значений входного столбца.
+  
   BEGIN
-	v_tbl = ('SA_product_A', 'SA_counteragent_A', 'SA_invoice_A', 'SA_invoice_line_A');
+	--v_tbl = ('SA_product_A', 'SA_counteragent_A', 'SA_invoice_A', 'SA_invoice_line_A');
   
     INSERT INTO public.log_dwh_load_A -- логирование старта работы где? Тут
 		(seans_load_id, load_status, date_begin, source_system_id) 
@@ -48,22 +68,45 @@ CALL load_F_invoice_line_A(
 -- 	FROM log_table_load_a logt
 -- 	WHERE seans_load_id = p_seans_load_id;
 
+-- CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] имя ] ON имя_таблицы [ USING метод ]
+--     ( { имя_столбца | ( выражение ) 
+-- CREATE UNIQUE INDEX IF NOT EXISTS v_t_index_count ON log_table_load_a ( src_table ) 
+-- 							WHERE log_table_load_a.seans_load_id = p_seans_load_id;
 
 	
 	--SELECT logt.src_table AS src_table FROM log_table_load_a logt;
 	--FOR unnest(ARRAY['SA_product_A','SA_counteragent_A','SA_invoice_A','SA_invoice_line_A']) IN 
-	FOR v_tbl IN
-	SELECT src_table --logt.
-	FROM log_table_load_a logt
-	LOOP
-	IF  logt.load_status = 'FINISHED*'
-		FROM log_table_load_a logt
-		WHERE seans_load_id = p_seans_load_id 
-	THEN v_load_status = 'FINISHED*';
-	ELSE v_load_status = 'FINISHED';
-	END IF;
+	--курсор FOR v_tbl IN
+	
+	
+
+	
+	
+				  
+-- 	FOR v_line IN cur_load LOOP
+	OPEN cur_load;			  
+	FETCH FROM cur_load INTO v_load_status;
+-- 	END LOOP;
+	--1-й строкой  
+	-- сортировка от худшего к лучшему.
+	--FETCH [направление { FROM | IN }] курсор INTO цель;	
+-- 	IF  logt.load_status = 'FINISHED*'
+-- 		FROM log_table_load_a logt
+-- 		WHERE seans_load_id = p_seans_load_id --AND
+			  --logt.src_table IN v_tbl[i]				--   query returned more than one row
+			  --p(logt.src_table) = v_t_row_count::integer   -- нужно ли? как уточнить поле?
+		      --if 
+
+			  --v_t_index_count::integer = p(logt.src_table)
+			  
+-- 	THEN v_load_status = 'FINISHED*';
+-- 	ELSE v_load_status = 'FINISHED';
+-- 	END IF;
+-- 	v_t_index_count = v_t_index_count::integer + 1;
+	
+	--RAISE NOTICE 'v_t_row_count';
 	--END
-	END LOOP;
+-- 	END LOOP;
 	
 	
 	
@@ -100,18 +143,18 @@ CALL load_F_invoice_line_A(
 
  
 
---  EXCEPTION WHEN OTHERS THEN -- логирование в error_table
--- 	PERFORM public.fill_table_load_err(
--- 	p_trg_table => 'log_dwh_load_A',
--- 	p_err_type => SQLSTATE,
--- 	p_err_text => SQLERRM,
--- 	p_key_value => 'Найдена ошибка', --NULL
--- 	p_sa_load_id => NULL,
--- 	p_load_id => NULL,
--- 	p_seans_load_id => p_seans_load_id,
--- 	p_load_name => 'dwh_load',
--- 	p_source_system_id => p_source_system_id
--- 	  );
+ EXCEPTION WHEN OTHERS THEN -- логирование в error_table
+	PERFORM public.fill_table_load_err(
+	p_trg_table => 'log_dwh_load_A',
+	p_err_type => SQLSTATE,
+	p_err_text => SQLERRM,
+	p_key_value => 'Найдена ошибка', --NULL
+	p_sa_load_id => NULL,
+	p_load_id => NULL,
+	p_seans_load_id => p_seans_load_id,
+	p_load_name => 'dwh_load',
+	p_source_system_id => p_source_system_id
+	  );
 	v_load_status = 'FINISHED*';
 
 END;
