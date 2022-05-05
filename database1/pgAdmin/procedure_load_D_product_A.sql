@@ -13,12 +13,9 @@ DECLARE
 	v_t_row_count bigint = 0;
 	v_e_row_count bigint = 0;
 	v_load_status character varying; -- DEFAULT 'STARTED';
--- 	v_sqlerrm character varying;
-	
--- т.к. новых зачений не было, ничего не меняется, проверка на ноль, заменяет значение на ноль. 
---load_status для всей таблицы, а не каждой строки. Не нужна колонка.
 
-    cur_product CURSOR IS  -- проверить строки а ошибки, грязь.
+
+    cur_product CURSOR IS  
    SELECT dproduct.product_ID, saproduct.product_code, saproduct.price, 
 	saproduct.sa_load_id, saproduct.load_period, saproduct.is_last,
 	COALESCE(saproduct.product_name::character varying,'XXX') AS product_name, --dproduct.product_src_code,
@@ -57,10 +54,6 @@ PERFORM public.fill_table_load_log (
 BEGIN
 	v_load_status = 'FINISHED'::character varying; 
 	
-	--p_seans_load_id = nextval('seq_seans_load_id'); 
--- 	EXCEPTION 
--- 	WHEN OTHERS THEN
-	
     FOR v_prod IN cur_product LOOP 
     BEGIN
 	v_sa_load_id = v_prod.sa_load_id;
@@ -74,7 +67,7 @@ BEGIN
 			p_trg_table => 'D_product_A'::character varying, 
 			p_source_system_id => 0::bigint,
 			p_key_value => 'Найдена ошибка',
-			p_err_type => 'map', --суперконкретно, неинформативно сейчас, 
+			p_err_type => 'map', 
 			p_err_text => 'Название продукта не найдено. Код продукта: ' || v_prod.product_code || '. Ошибка в селекте, в начале процедуры.'
 	    	);
 			v_e_row_count = v_e_row_count + 1;
@@ -90,14 +83,14 @@ BEGIN
 			p_trg_table => 'D_product_A'::character varying, 
 			p_source_system_id => 0::bigint,
 			p_key_value => 'Найдена ошибка',
-			p_err_type => 'Дубликат',   --SQLSTATE::character varying, --'Дубликат', -- какой код, как найти, где найти ошибку
+			p_err_type => 'Дубликат',   
 			p_err_text => 'Cтрока уже существует. Код продукта найден несколько раз. Код продукта: '||v_prod.product_code||'. Ошибка в селекте, в начале процедуры.'
-			 --SQLERRM::character varying --'Cтрока уже существует'
 	    	);
 			v_e_row_count = v_e_row_count + 1;
 			v_load_status = 'FINISHED*'::character varying; 
 	--CONTINUE;
 	END IF;
+
 
 	 
 	IF v_prod.product_ID IS NULL THEN 
@@ -121,8 +114,6 @@ BEGIN
         	  v_t_row_count = v_t_row_count + 1;
 	END IF;
 
-	-- 	v_sqlerrm = SQLERRM;
-   --     v_sqlstate = SQLSTATE;   
 	EXCEPTION 
 	WHEN OTHERS THEN
         PERFORM public.fill_table_load_err ( 

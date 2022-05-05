@@ -14,8 +14,7 @@ CREATE OR REPLACE FUNCTION public.dwh_load(
 AS $BODY$
   DECLARE
   v_load_status character varying = 'STARTED';
-  --v_tbl character varying;
-  --v_t_index_count integer; --= 0;
+
   
   	cur_load CURSOR IS
 	SELECT load_status			--src_table --logt.
@@ -26,17 +25,10 @@ AS $BODY$
 	              WHEN  load_status = 'FINISHED' THEN 3  --v_load_status = 'FINISHED'
 				  ELSE 4 --результат выполнения CASE = 2, сортировка по load_status = 'FINISHED*'. Когда внутри CASE истина, остальное не проходит.
 				  END; -- Далее FETCH извлекает строку 'FINISHED*' из курсора в цель, нужную переменную.
-	-- сортировка: сначала 1, затем где 2, потом 3.			  
-				  
-				  
-  -- The PG manual says the ORDER BY expression:
-  --Each expression can be the name or ordinal number of an output column (SELECT list item)
-  --, or it can be an arbitrary expression formed from input-column values.
-  --Каждое выражение может быть именем или порядковым номером выходного столбца (элемент списка SELECT), 
-  --или оно может быть произвольным выражением, сформированным из значений входного столбца.
+
   
   BEGIN
-	--v_tbl = ('SA_product_A', 'SA_counteragent_A', 'SA_invoice_A', 'SA_invoice_line_A');
+
   
     INSERT INTO public.log_dwh_load_A -- логирование старта работы где? Тут
 		(seans_load_id, load_status, date_begin, source_system_id) 
@@ -63,77 +55,11 @@ CALL load_F_invoice_line_A(
 	p_load_period   => p_load_period::bigint
 );    
   
--- 	v_load_status = 'FINISHED';
--- 	v_load_status = logt.load_status 
--- 	FROM log_table_load_a logt
--- 	WHERE seans_load_id = p_seans_load_id;
 
--- CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] имя ] ON имя_таблицы [ USING метод ]
---     ( { имя_столбца | ( выражение ) 
--- CREATE UNIQUE INDEX IF NOT EXISTS v_t_index_count ON log_table_load_a ( src_table ) 
--- 							WHERE log_table_load_a.seans_load_id = p_seans_load_id;
-
-	
-	--SELECT logt.src_table AS src_table FROM log_table_load_a logt;
-	--FOR unnest(ARRAY['SA_product_A','SA_counteragent_A','SA_invoice_A','SA_invoice_line_A']) IN 
-	--курсор FOR v_tbl IN
-	
-	
-
-	
-	
-				  
--- 	FOR v_line IN cur_load LOOP
 	OPEN cur_load;			  
 	FETCH FROM cur_load INTO v_load_status;
--- 	END LOOP;
-	--1-й строкой  
-	-- сортировка от худшего к лучшему.
-	--FETCH [направление { FROM | IN }] курсор INTO цель;	
--- 	IF  logt.load_status = 'FINISHED*'
--- 		FROM log_table_load_a logt
--- 		WHERE seans_load_id = p_seans_load_id --AND
-			  --logt.src_table IN v_tbl[i]				--   query returned more than one row
-			  --p(logt.src_table) = v_t_row_count::integer   -- нужно ли? как уточнить поле?
-		      --if 
 
-			  --v_t_index_count::integer = p(logt.src_table)
-			  
--- 	THEN v_load_status = 'FINISHED*';
--- 	ELSE v_load_status = 'FINISHED';
--- 	END IF;
--- 	v_t_index_count = v_t_index_count::integer + 1;
-	
-	--RAISE NOTICE 'v_t_row_count';
-	--END
--- 	END LOOP;
-	
-	
-	
--- 	IF  logt.load_status = 'FINISHED*'
--- 		FROM log_table_load_a logt
--- 		WHERE seans_load_id = p_seans_load_id AND
--- 		src_table = 'SA_product_A' --OR src_table = 'SA_counteragent_A' OR src_table = 'SA_invoice_A' OR src_table = 'SA_invoice_line_A'
--- 	THEN v_load_status = 'FINISHED*';
-	
--- 	ELSEIF logt.load_status = 'FINISHED*'
--- 	FROM log_table_load_a logt
--- 	WHERE seans_load_id = p_seans_load_id AND
--- 	src_table = 'SA_counteragent_A'
--- 	THEN v_load_status = 'FINISHED*';
-	
--- 	ELSEIF 
-	
--- 	ELSE v_load_status = 'FINISHED';
--- 	END IF;
-	
-	
-	
--- 	LOOP
--- 	BEGIN
-    UPDATE public.log_dwh_load_A --dwh_load --здесь дописать что если закончилось с ошибками, то обновить, что
-								 -- закончилось FINISHED* именно в dwh_log. Или просто FINISHED туда же.
-								 						 
+    UPDATE public.log_dwh_load_A 					 						 
 		SET 
 			load_status = v_load_status,
 			--IF 

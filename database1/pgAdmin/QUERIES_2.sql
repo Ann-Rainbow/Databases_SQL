@@ -55,7 +55,7 @@ CALL load_D_product_A (
 
 SELECT public.dwh_load (10, 26, 11);
 SELECT public.dwh_load (10, 26, 11);
-SELECT public.dwh_load (202200000, 190, 1);
+SELECT public.dwh_load (202200000, 191, 1);
 -- 	p_load_period => 10,
 -- 	p_source_system_id => 26,
 -- 	p_seans_load_id => 11
@@ -88,9 +88,9 @@ CALL load_D_counteragent_A (146, 10); --load_period: 10, 20
 CALL load_F_invoice_A (153, 25); --load_period: 
 CALL load_F_invoice_line_A (177, 10); --load_period:  
 
-CALL load_D_product_A (5, 202200000);
+CALL load_D_product_A (192, 202200000);
 CALL load_D_product_A (6, 202201200);
-CALL load_D_counteragent_A (7, 202200000);
+CALL load_D_counteragent_A (194, 202200000);
 CALL load_D_counteragent_A (8, 202201200);
 
 CALL load_F_invoice_A (7, 202200000);
@@ -247,6 +247,7 @@ INSERT INTO SA_invoice_A VALUES ('04', '2020-02-02', 1, 4, 10, 'true', '4', '04'
 --UPDATE products SET price = 10 WHERE price = 5;
 UPDATE SA_invoice_A SET product_code = '03' WHERE product_code = '30';
 UPDATE SA_invoice_A SET product_code = '04' WHERE product_code = '20';
+UPDATE SA_counteragent_A SET counteragent_name = 'Danilov Maxim' WHERE sa_load_id = 14; 
 
 INSERT INTO F_invoice_A VALUES (-1, -1, NULL, -1, -1, -1, -1, '-1', '-1', '-1', -1); -- ДОДЕЛАТЬ!
 INSERT INTO F_invoice_line_A VALUES (-1, 0, -1, -1, '0');
@@ -259,6 +260,21 @@ INSERT INTO SA_counteragent_A VALUES ('03', 'Bolsheva Ann', 1, 10, 'true');
 INSERT INTO SA_counteragent_A VALUES ('05', NULL, 2, 10, 'true');
 INSERT INTO SA_invoice_line_A VALUES (80, 6, 10, 'true', NULL);
 INSERT INTO SA_invoice_line_A VALUES (NULL, 6, 10, 'true', '1');
+
+INSERT INTO SA_product_A VALUES ('06', 'Bread', '44', 5, 202200000, 'true');
+INSERT INTO SA_product_A VALUES ('07', 'Milk', '75', 6, 202200000, 'true');
+INSERT INTO SA_product_A VALUES ('08', 'Eggs', '80', 7, 202200000, 'true');
+INSERT INTO SA_product_A VALUES ('09', 'Sugar', '35', 8, 202200000, 'true');
+INSERT INTO SA_product_A VALUES ('10', 'Onion', '5', 9, 202200000, 'true');
+
+INSERT INTO SA_counteragent_A VALUES ('06', 'Portnov Mikhail', 3, 202200000, 'true');
+INSERT INTO SA_counteragent_A VALUES ('07', 'Bell Tanya', 4, 202200000, 'true');
+INSERT INTO SA_counteragent_A VALUES ('08', 'Skakun Maria', 5, 202200000, 'true');
+INSERT INTO SA_counteragent_A VALUES ('09', 'Rainbow Ann', 6, 202200000, 'true');
+INSERT INTO SA_counteragent_A VALUES ('10', 'Shreiden Kira', 7, 202200000, 'true');
+INSERT INTO SA_counteragent_A VALUES ('11', 'Ivanov Ivan', 8, 202200000, 'false');
+
+
 
 --поменять тип данных поля.
 ALTER TABLE F_invoice_A ALTER COLUMN counteragent_src_code TYPE character varying;
@@ -302,3 +318,4 @@ SELECT * FROM SA_product_A;
 SELECT * FROM SA_counteragent_A;
 SELECT * FROM SA_invoice_A;
 SELECT * FROM SA_invoice_line_A;
+
